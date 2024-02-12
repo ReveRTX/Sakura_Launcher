@@ -333,6 +333,37 @@ public abstract class SystemShortcut<T extends Context & ActivityContext> extend
         }
     }
 
+// Remove app start
+public static class REMOVE_APPS extends SystemShortcut<BaseDraggingActivity> {
+
+    public REMOVE_APPS(BaseDraggingActivity target, ItemInfo itemInfo, View originalView) {
+        super(R.drawable.ic_remove_no_shadow, R.string.remove_drop_target_label,
+                target, itemInfo, originalView);
+    }
+
+    @Override
+    public void onClick(View view) {
+        ItemInfo itemInfo = mItemInfo;
+        if (itemInfo instanceof WorkspaceItemInfo) {
+            WorkspaceItemInfo workspaceItemInfo = (WorkspaceItemInfo) itemInfo;
+            // Check if the item can be removed
+            if (canRemove(workspaceItemInfo)) {
+                // Prepare to undo delete
+                mDropTargetHandler.prepareToUndoDelete();
+                
+                // Remove the item from the workspace and database
+                // You can perform deletion operations here
+                // For example, you can use a LauncherModel to delete the item from the database
+                LauncherModel.deleteItemFromDatabase(mTarget, workspaceItemInfo);
+                
+                // Announce the removal for accessibility
+                CharSequence announcement = getContext().getString(R.string.item_removed);
+                mDropTargetHandler.getDropTargetBar().announceForAccessibility(announcement);
+            }
+        }
+    }
+}
+// Remove app shortcut end
     public static <T extends Context & ActivityContext> void dismissTaskMenuView(T activity) {
         AbstractFloatingView.closeOpenViews(activity, true,
             AbstractFloatingView.TYPE_ALL & ~AbstractFloatingView.TYPE_REBIND_SAFE);
